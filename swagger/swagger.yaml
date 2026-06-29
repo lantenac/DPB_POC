@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Digital Battery Passport API (BaSyx AAS Part 2 subset)
+  description: >
+    Interactive client for the Battery Pass submodel hosted on the Eclipse BaSyx
+    v2 AAS Environment. Covers the AAS Part 2 HTTP/REST endpoints used by this POC.
+    Identifiers in paths are Base64URL-encoded per the AAS Part 2 specification.
+
+    The BaSyx AAS Environment also serves its own complete, auto-generated Swagger UI
+    at http://localhost:8081/swagger-ui/index.html — this spec is a curated subset.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8081
+    description: BaSyx AAS Environment (local)
+tags:
+  - name: Shells
+  - name: Battery Pass Submodel
+paths:
+  /shells:
+    get:
+      tags: [Shells]
+      summary: List all Asset Administration Shells
+      responses:
+        "200":
+          description: Paged list of shells
+  /shells/{aasIdentifier}:
+    get:
+      tags: [Shells]
+      summary: Get a specific AAS by Base64URL-encoded id
+      parameters:
+        - $ref: '#/components/parameters/aasIdentifier'
+      responses:
+        "200": { description: The Asset Administration Shell }
+        "404": { description: Not found }
+  /submodels:
+    get:
+      tags: [Battery Pass Submodel]
+      summary: List all submodels
+      responses:
+        "200": { description: Paged list of submodels }
+  /submodels/{submodelIdentifier}:
+    get:
+      tags: [Battery Pass Submodel]
+      summary: Get the Battery Pass submodel (full)
+      description: >
+        Sample submodel id (decoded):
+        https://schneider-electric.com/ids/sm/battery_pass/9089016745673456
+      parameters:
+        - $ref: '#/components/parameters/submodelIdentifier'
+      responses:
+        "200": { description: The complete Battery Pass submodel }
+        "404": { description: Not found }
+  /submodels/{submodelIdentifier}/submodel-elements:
+    get:
+      tags: [Battery Pass Submodel]
+      summary: List all submodel elements (battery passport properties)
+      parameters:
+        - $ref: '#/components/parameters/submodelIdentifier'
+      responses:
+        "200": { description: List of submodel elements }
+  /submodels/{submodelIdentifier}/submodel-elements/{idShortPath}:
+    get:
+      tags: [Battery Pass Submodel]
+      summary: Get a single property by idShort path
+      description: "Example idShortPath: CarbonFootprint.CarbonFootprintTotal"
+      parameters:
+        - $ref: '#/components/parameters/submodelIdentifier'
+        - name: idShortPath
+          in: path
+          required: true
+          schema: { type: string }
+          example: CarbonFootprint.CarbonFootprintTotal
+      responses:
+        "200": { description: The submodel element }
+        "404": { description: Not found }
+components:
+  parameters:
+    aasIdentifier:
+      name: aasIdentifier
+      in: path
+      required: true
+      description: Base64URL-encoded AAS identifier
+      schema: { type: string }
+      example: aHR0cHM6Ly9zY2huZWlkZXItZWxlY3RyaWMuY29tL2lkcy9hYXMvZ2FsYXh5LXZzLTIwa3ZhLTIwNTUwMTY3NDU2Nzg5MDE=
+    submodelIdentifier:
+      name: submodelIdentifier
+      in: path
+      required: true
+      description: Base64URL-encoded submodel identifier
+      schema: { type: string }
+      example: aHR0cHM6Ly9zY2huZWlkZXItZWxlY3RyaWMuY29tL2lkcy9zbS9iYXR0ZXJ5X3Bhc3MvOTA4OTAxNjc0NTY3MzQ1Ng==

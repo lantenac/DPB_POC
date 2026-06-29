@@ -1,0 +1,290 @@
+{
+  "assetAdministrationShells": [
+    {
+      "modelType": "AssetAdministrationShell",
+      "id": "https://schneider-electric.com/ids/aas/galaxy-vs-20kva-2055016745678901",
+      "idShort": "GalaxyVS_20kVA_AAS",
+      "displayName": [
+        { "language": "en", "text": "Schneider Electric Galaxy VS 20 kVA UPS" }
+      ],
+      "description": [
+        { "language": "en", "text": "Asset Administration Shell for a Schneider Electric Galaxy VS three-phase UPS containing a Li-ion battery module. POC sample data." }
+      ],
+      "assetInformation": {
+        "assetKind": "Instance",
+        "globalAssetId": "https://id.gs1.org/01/03606489012345/21/QB2145-001234",
+        "specificAssetIds": [
+          {
+            "name": "GTIN",
+            "value": "03606489012345"
+          },
+          {
+            "name": "SerialNumber",
+            "value": "QB2145-001234"
+          },
+          {
+            "name": "CommercialReference",
+            "value": "GVSUPS20KB10"
+          }
+        ]
+      },
+      "submodels": [
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://schneider-electric.com/ids/sm/battery_pass/9089016745673456"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "modelType": "Submodel",
+      "kind": "Instance",
+      "id": "https://schneider-electric.com/ids/sm/battery_pass/9089016745673456",
+      "idShort": "BatteryPass",
+      "displayName": [
+        { "language": "en", "text": "Digital Battery Passport" }
+      ],
+      "description": [
+        { "language": "en", "text": "Battery Pass submodel per IDTA 02023 / EU Battery Regulation (EU) 2023/1542. POC sample for a Schneider Electric Galaxy VS UPS battery module." }
+      ],
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/SubmodelTemplate/BatteryPass/1/0"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "BatteryIdentification",
+          "semanticId": {
+            "type": "ExternalReference",
+            "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/BatteryIdentification/1/0" }]
+          },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "BatteryPassIdentifier",
+              "valueType": "xs:string",
+              "value": "BP-SE-GVS20K-QB2145-001234",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/BatteryPassIdentifier/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "BatteryModel",
+              "valueType": "xs:string",
+              "value": "Galaxy VS Li-ion Module GVSBATT20",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/BatteryModel/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "BatteryCategory",
+              "valueType": "xs:string",
+              "value": "Industrial battery",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/BatteryCategory/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "ManufacturingDate",
+              "valueType": "xs:date",
+              "value": "2024-11-15",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/ManufacturingDate/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "ManufacturingPlace",
+              "valueType": "xs:string",
+              "value": "Schneider Electric Plant, Grenoble, France",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/ManufacturingPlace/1/0" }] }
+            }
+          ]
+        },
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "Manufacturer",
+          "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/Manufacturer/1/0" }] },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "ManufacturerName",
+              "valueType": "xs:string",
+              "value": "Schneider Electric SE",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/ManufacturerName/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "ManufacturerAddress",
+              "valueType": "xs:string",
+              "value": "35 rue Joseph Monier, 92500 Rueil-Malmaison, France",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/ManufacturerAddress/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "ManufacturerContact",
+              "valueType": "xs:string",
+              "value": "batterypass-poc@schneider-electric.com",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/ManufacturerContact/1/0" }] }
+            }
+          ]
+        },
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "PerformanceAndDurability",
+          "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/PerformanceAndDurability/1/0" }] },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "RatedCapacity",
+              "valueType": "xs:double",
+              "value": "20.0",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/RatedCapacity/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "NominalVoltage",
+              "valueType": "xs:double",
+              "value": "480.0",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/NominalVoltage/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "BatteryChemistry",
+              "valueType": "xs:string",
+              "value": "Li-ion NMC (Lithium Nickel Manganese Cobalt Oxide)",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/BatteryChemistry/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "ExpectedLifetimeCycles",
+              "valueType": "xs:int",
+              "value": "4000",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/ExpectedLifetimeCycles/1/0" }] }
+            }
+          ]
+        },
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "StateOfHealth",
+          "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/StateOfHealth/1/0" }] },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "StateOfHealth",
+              "valueType": "xs:double",
+              "value": "98.5",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/StateOfHealthValue/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "RemainingCapacity",
+              "valueType": "xs:double",
+              "value": "19.7",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/RemainingCapacity/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "FullCycleCount",
+              "valueType": "xs:int",
+              "value": "112",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/FullCycleCount/1/0" }] }
+            }
+          ]
+        },
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "CarbonFootprint",
+          "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/CarbonFootprint/1/0" }] },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "CarbonFootprintTotal",
+              "valueType": "xs:double",
+              "value": "84.6",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/CarbonFootprintTotal/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "CarbonFootprintUnit",
+              "valueType": "xs:string",
+              "value": "kg CO2e / kWh",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/CarbonFootprintUnit/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "CarbonFootprintShareElectricity",
+              "valueType": "xs:double",
+              "value": "41.2",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/CarbonFootprintShareElectricity/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "CarbonFootprintPerformanceClass",
+              "valueType": "xs:string",
+              "value": "B",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/CarbonFootprintPerformanceClass/1/0" }] }
+            }
+          ]
+        },
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "MaterialComposition",
+          "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/MaterialComposition/1/0" }] },
+          "value": [
+            {
+              "modelType": "Property",
+              "idShort": "RecycledContentCobalt",
+              "valueType": "xs:double",
+              "value": "16.0",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/RecycledContentCobalt/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "RecycledContentLithium",
+              "valueType": "xs:double",
+              "value": "6.0",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/RecycledContentLithium/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "RecycledContentNickel",
+              "valueType": "xs:double",
+              "value": "6.0",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/RecycledContentNickel/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "RecycledContentLead",
+              "valueType": "xs:double",
+              "value": "0.0",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/RecycledContentLead/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "HazardousSubstances",
+              "valueType": "xs:string",
+              "value": "Lithium salts (LiPF6 electrolyte); Nickel compounds. Handle per SDS. No mercury, cadmium or lead above REACH thresholds.",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/HazardousSubstances/1/0" }] }
+            },
+            {
+              "modelType": "Property",
+              "idShort": "CriticalRawMaterials",
+              "valueType": "xs:string",
+              "value": "Cobalt, Lithium, Natural Graphite, Nickel",
+              "semanticId": { "type": "ExternalReference", "keys": [{ "type": "GlobalReference", "value": "https://admin-shell.io/idta/BatteryPass/CriticalRawMaterials/1/0" }] }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "conceptDescriptions": []
+}

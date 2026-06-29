@@ -1,0 +1,90 @@
+services:
+  # ---------------------------------------------------------------------------
+  # BaSyx v2 AAS Environment: AAS + Submodel + ConceptDescription repositories
+  # plus the AAS Part 2 HTTP/REST API and a built-in Swagger UI.
+  # ---------------------------------------------------------------------------
+  aas-environment:
+    image: eclipsebasyx/aas-environment:2.0.0-milestone-05
+    container_name: dpb-aas-environment
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      BASYX_BACKEND: InMemory
+      BASYX_CORS_ALLOWED_ORIGINS: "*"
+      BASYX_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # ---------------------------------------------------------------------------
+  # AAS Registry (v2, in-memory)
+  # ---------------------------------------------------------------------------
+  aas-registry:
+    image: eclipsebasyx/aas-registry-log-mem:2.0.0-milestone-05
+    container_name: dpb-aas-registry
+    ports:
+      - "8082:8080"
+    environment:
+      BASYX_CORS_ALLOWED_ORIGINS: "*"
+      BASYX_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+
+  # ---------------------------------------------------------------------------
+  # Submodel Registry (v2, in-memory)
+  # ---------------------------------------------------------------------------
+  submodel-registry:
+    image: eclipsebasyx/submodel-registry-log-mem:2.0.0-milestone-05
+    container_name: dpb-submodel-registry
+    ports:
+      - "8083:8080"
+    environment:
+      BASYX_CORS_ALLOWED_ORIGINS: "*"
+      BASYX_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+
+  # ---------------------------------------------------------------------------
+  # One-shot seeder: registers the Schneider Electric sample Battery Pass
+  # into the AAS Environment once it is healthy, then exits.
+  # ---------------------------------------------------------------------------
+  seeder:
+    image: python:3.12-slim
+    container_name: dpb-seeder
+    depends_on:
+      aas-environment:
+        condition: service_healthy
+    volumes:
+      - ./upload_aas.py:/app/upload_aas.py:ro
+      - ./seed:/app/seed:ro
+    working_dir: /app
+    environment:
+      AAS_ENV_BASE: "http://aas-environment:8081"
+    command: ["python", "upload_aas.py"]
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # Single-page frontend (plain HTML/JS served by nginx)
+  # ---------------------------------------------------------------------------
+  frontend:
+    image: nginx:alpine
+    container_name: dpb-frontend
+    ports:
+      - "8088:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - aas-environment
+
+  # ---------------------------------------------------------------------------
+  # Standalone Swagger UI serving the Battery Pass OpenAPI spec.
+  # (The AAS Environment also exposes its own Swagger UI — see README.)
+  # ---------------------------------------------------------------------------
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: dpb-swagger-ui
+    ports:
+      - "8089:8080"
+    environment:
+      SWAGGER_JSON: /spec/swagger.yaml
+    volumes:
+      - ./swagger:/spec:ro

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Battery Passport — POC</title>
+  <style>
+    :root { --se: #3dcd58; --dark: #1c1c1c; --bg: #f4f6f8; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: var(--bg); color: var(--dark); }
+    header { background: var(--dark); color: #fff; padding: 18px 28px; display: flex; align-items: center; gap: 12px; }
+    header .dot { width: 14px; height: 14px; background: var(--se); border-radius: 3px; }
+    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+    main { max-width: 880px; margin: 28px auto; padding: 0 20px; }
+    .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 22px; margin-bottom: 22px; }
+    form { display: flex; gap: 10px; flex-wrap: wrap; }
+    input[type=text] { flex: 1; min-width: 260px; padding: 11px 13px; border: 1px solid #ccc; border-radius: 7px; font-size: 14px; }
+    button { background: var(--se); color: #03340f; border: none; padding: 11px 20px; border-radius: 7px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    button:hover { filter: brightness(.95); }
+    .hint { font-size: 12px; color: #666; margin-top: 8px; }
+    .gs1 { background: #eafaef; border: 1px solid var(--se); border-radius: 8px; padding: 14px; margin-bottom: 18px; word-break: break-all; }
+    .gs1 a { color: #0a7d2c; font-weight: 600; }
+    h2 { font-size: 15px; border-bottom: 2px solid var(--se); padding-bottom: 6px; margin: 22px 0 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    td { padding: 7px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    td.k { color: #555; width: 45%; }
+    td.v { font-weight: 500; }
+    .err { color: #b00020; }
+    .meta { font-size: 12px; color: #777; margin-top: 4px; }
+    .links a { color: #0a7d2c; margin-right: 16px; font-size: 13px; }
+    #result { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="dot"></span>
+    <h1>Digital Battery Passport &mdash; BaSyx AAS POC</h1>
+  </header>
+  <main>
+    <div class="card">
+      <form id="lookup">
+        <input type="text" id="pid" placeholder="Enter product identifier (serial or AAS id)…"
+               value="QB2145-001234" autocomplete="off" />
+        <button type="submit">Look up passport</button>
+      </form>
+      <div class="hint">
+        Try serial <code>QB2145-001234</code> or AAS id
+        <code>https://schneider-electric.com/ids/aas/galaxy-vs-20kva-2055016745678901</code>.
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a id="swaggerLink" href="#" target="_blank">↗ Swagger UI (Battery Pass API)</a>
+        <a id="nativeSwagger" href="#" target="_blank">↗ BaSyx native API docs</a>
+      </div>
+      <div id="msg" class="meta"></div>
+    </div>
+
+    <div class="card" id="result">
+      <div class="gs1">
+        <strong>GS1 Digital Link</strong><br />
+        <a id="gs1link" href="#" target="_blank"></a>
+      </div>
+      <div id="header-info"></div>
+      <div id="passport"></div>
+    </div>
+  </main>
+
+  <script>
+    // AAS Environment REST API base (browser-side; CORS enabled on the server).
+    const AAS_BASE = `http://${location.hostname}:8081`;
+    document.getElementById('swaggerLink').href = `http://${location.hostname}:8089`;
+    document.getElementById('nativeSwagger').href = `${AAS_BASE}/swagger-ui/index.html`;
+
+    const b64 = (s) => btoa(s).replace(/\+/g, '-').replace(/\//g, '_');
+    const msg = (t, err) => {
+      const m = document.getElementById('msg');
+      m.textContent = t; m.className = 'meta' + (err ? ' err' : '');
+    };
+
+    async function findShell(pid) {
+      const res = await fetch(`${AAS_BASE}/shells`);
+      if (!res.ok) throw new Error(`AAS Environment returned ${res.status}`);
+      const shells = (await res.json()).result || [];
+      // match on AAS id, or any specificAssetId value (serial, GTIN, commercial ref)
+      return shells.find(s =>
+        s.id === pid ||
+        (s.assetInformation?.specificAssetIds || []).some(a => a.value === pid)
+      );
+    }
+
+    function gs1Url(shell) {
+      const said = shell.assetInformation?.specificAssetIds || [];
+      const gtin = said.find(a => a.name === 'GTIN')?.value;
+      const serial = said.find(a => a.name === 'SerialNumber')?.value;
+      if (gtin && serial) return `https://id.gs1.org/01/${gtin}/21/${serial}`;
+      return shell.assetInformation?.globalAssetId || null;
+    }
+
+    function renderProps(elements, prefix = '') {
+      let rows = '';
+      for (const el of elements) {
+        if (el.modelType === 'SubmodelElementCollection') {
+          rows += `<tr><td colspan="2"><h2>${el.idShort}</h2></td></tr>`;
+          rows += renderProps(el.value || [], prefix);
+        } else if (el.value !== undefined) {
+          rows += `<tr><td class="k">${el.idShort}</td><td class="v">${el.value}</td></tr>`;
+        }
+      }
+      return rows;
+    }
+
+    async function lookup(pid) {
+      msg('Searching…');
+      document.getElementById('result').style.display = 'none';
+      const shell = await findShell(pid);
+      if (!shell) { msg(`No product found for "${pid}".`, true); return; }
+
+      // resolve the Battery Pass submodel reference
+      const smRef = (shell.submodels || [])[0]?.keys?.[0]?.value;
+      if (!smRef) { msg('Product has no submodel reference.', true); return; }
+      const smRes = await fetch(`${AAS_BASE}/submodels/${b64(smRef)}`);
+      if (!smRes.ok) { msg(`Submodel fetch failed (${smRes.status}).`, true); return; }
+      const sm = await smRes.json();
+
+      // GS1 link
+      const url = gs1Url(shell);
+      const link = document.getElementById('gs1link');
+      link.href = url; link.textContent = url;
+
+      document.getElementById('header-info').innerHTML =
+        `<div class="meta"><strong>${shell.idShort}</strong> &middot; AAS id: ${shell.id}<br/>` +
+        `Submodel: ${sm.idShort} &middot; semanticId: ${sm.semanticId?.keys?.[0]?.value || '—'}</div>`;
+
+      document.getElementById('passport').innerHTML =
+        `<table>${renderProps(sm.submodelElements || [])}</table>`;
+      document.getElementById('result').style.display = 'block';
+      msg('Passport loaded.');
+    }
+
+    document.getElementById('lookup').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pid = document.getElementById('pid').value.trim();
+      if (pid) lookup(pid).catch(err => msg(err.message, true));
+    });
+  </script>
+</body>
+</html>

@@ -33,7 +33,7 @@ def request(method: str, url: str, payload=None):
         return e.code, e.read()
 
 
-def wait_for_env(retries: int = 30, delay: float = 3.0):
+def wait_for_env(retries: int = 60, delay: float = 5.0):
     for i in range(retries):
         try:
             status, _ = request("GET", f"{ENV_BASE}/shells")

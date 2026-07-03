@@ -60,7 +60,9 @@ services:
     environment:
       AAS_ENV_BASE: "http://aas-environment:8081"
     command: ["python", "upload_aas.py"]
-    restart: "no"
+    # Retry the whole seeding run if BaSyx is still booting when the internal
+    # wait window (60 x 5s = 5 min) is exhausted. Exits 0 on success, no restart.
+    restart: on-failure
 
   # ---------------------------------------------------------------------------
   # Single-page frontend (plain HTML/JS served by nginx)

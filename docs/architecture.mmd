@@ -1,0 +1,74 @@
+%%{init: {'theme':'neutral', 'flowchart':{'curve':'basis'}}}%%
+flowchart TB
+
+    %% ===================== CLIENT TIER =====================
+    subgraph CLIENTS["🖥️  Client Tier (User's browser / CLI)"]
+        direction TB
+        UI["«SPA» Battery Passport UI<br/>frontend/index.html<br/>plain HTML + JS (fetch)"]
+        SW["«tool» Swagger UI client<br/>interactive API console"]
+        SMOKE["«script» smoke_test.py<br/>REST verification"]
+    end
+
+    %% ===================== DOCKER HOST =====================
+    subgraph HOST["🐳  Docker Host — docker compose network (bridge)"]
+        direction TB
+
+        %% ---- Hosted static / doc services ----
+        subgraph STATIC["Hosted static services"]
+            direction TB
+            NGINX["«container» frontend<br/>nginx:alpine<br/>:8088 → serves index.html"]
+            SWC["«container» swagger-ui<br/>swaggerapi/swagger-ui<br/>:8089 → serves swagger.yaml"]
+        end
+
+        %% ---- Core AAS server ----
+        subgraph SERVER["BaSyx v2 Server (Application Tier)"]
+            direction TB
+            AASENV["«container» aas-environment<br/>eclipsebasyx/aas-environment<br/>:8081<br/>AAS Part 2 HTTP/REST API<br/>+ native Swagger /swagger-ui"]
+            DB[("«component» In-Memory Store<br/>BASYX_BACKEND = InMemory<br/>(JVM heap — volatile)<br/>▶ swappable: MongoDB / CouchDB")]
+            AASENV --- DB
+        end
+
+        %% ---- Registries ----
+        subgraph REG["Discovery / Registry services"]
+            direction TB
+            AASREG["«container» aas-registry<br/>aas-registry-log-mem<br/>:8082"]
+            SMREG["«container» submodel-registry<br/>submodel-registry-log-mem<br/>:8083"]
+            RDB[("in-memory<br/>descriptor store")]
+            AASREG --- RDB
+            SMREG --- RDB
+        end
+
+        %% ---- One-shot seeder ----
+        SEEDER["«container, one-shot» seeder<br/>python:3.12-slim<br/>runs upload_aas.py"]
+        SEED[("seed/battery_pass_aas.json<br/>Schneider Electric Galaxy VS<br/>Battery Pass — IDTA-02023")]
+        SEEDER -. reads .-> SEED
+    end
+
+    %% ===================== EXTERNAL =====================
+    GS1(["🌐 GS1 Digital Link<br/>id.gs1.org/01/{GTIN}/21/{serial}<br/>(external reference only)"])
+
+    %% ===================== RELATIONS =====================
+    UI -->|"HTTP GET /shells, /submodels<br/>(CORS)"| AASENV
+    UI -->|"loads page"| NGINX
+    UI -. "renders link (no call)" .-> GS1
+    SW -->|"try it out → REST"| AASENV
+    SWC -->|"serves spec to"| SW
+    SMOKE -->|"HTTP GET /submodels/{id}"| AASENV
+
+    SEEDER ==>|"① POST /submodels<br/>② POST /shells<br/>(seed on startup)"| AASENV
+
+    AASENV -. "may register descriptors" .-> AASREG
+    AASENV -. "may register descriptors" .-> SMREG
+
+    %% ===================== STYLES =====================
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#123;
+    classDef svc fill:#eafaef,stroke:#3dcd58,color:#043;
+    classDef store fill:#fff4e5,stroke:#f4a300,color:#432;
+    classDef ext fill:#f3e8fd,stroke:#a142f4,color:#312;
+    classDef seed fill:#fdecec,stroke:#e05353,color:#411;
+
+    class UI,SW,SMOKE client;
+    class NGINX,SWC,AASENV,AASREG,SMREG svc;
+    class DB,RDB,SEED store;
+    class GS1 ext;
+    class SEEDER seed;

@@ -13,11 +13,9 @@ services:
       BASYX_BACKEND: InMemory
       BASYX_CORS_ALLOWED_ORIGINS: "*"
       BASYX_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
+    # NOTE: no container healthcheck here — the BaSyx image ships without curl,
+    # so a curl-based healthcheck would always report "unhealthy". The seeder
+    # below waits for readiness itself (upload_aas.py polls GET /shells).
 
   # ---------------------------------------------------------------------------
   # AAS Registry (v2, in-memory)
@@ -45,14 +43,16 @@ services:
 
   # ---------------------------------------------------------------------------
   # One-shot seeder: registers the Schneider Electric sample Battery Pass
-  # into the AAS Environment once it is healthy, then exits.
+  # into the AAS Environment once it is reachable, then exits.
+  # upload_aas.py polls GET /shells and retries until the API answers, so it
+  # only needs the container started (not a Docker-level healthcheck).
   # ---------------------------------------------------------------------------
   seeder:
     image: python:3.12-slim
     container_name: dpb-seeder
     depends_on:
       aas-environment:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./upload_aas.py:/app/upload_aas.py:ro
       - ./seed:/app/seed:ro

@@ -1,0 +1,61 @@
+%%{init: {'theme':'neutral', 'flowchart':{'curve':'basis'}}}%%
+flowchart TB
+
+    %% ============ LAYER 1 — PRESENTATION (top) ============
+    subgraph L1["① Presentation Layer"]
+        direction LR
+        WEBUI["Battery Passport Web UI<br/>single-page app · identifier lookup<br/>renders passport + GS1 Digital Link"]
+        SWUI["Swagger UI<br/>interactive API explorer"]
+    end
+
+    %% ============ LAYER 2 — API ============
+    subgraph L2["② API Layer  ·  AAS Part 2 HTTP/REST"]
+        direction LR
+        SHELLAPI["Shells API<br/>/shells"]
+        SMAPI["Submodels API<br/>/submodels · /submodel-elements"]
+        REGAPI["Registry API<br/>/shell-descriptors · /submodel-descriptors"]
+    end
+
+    %% ============ LAYER 3 — APPLICATION / DOMAIN ============
+    subgraph L3["③ Application / Domain Layer  ·  Eclipse BaSyx"]
+        direction LR
+        AASENV["AAS Environment<br/>AAS + Submodel repositories<br/>Battery Pass submodel (IDTA-02023)"]
+        REG["AAS &amp; Submodel Registries<br/>descriptor lookup"]
+    end
+
+    %% ============ LAYER 4 — DATA ============
+    subgraph L4["④ Data Layer"]
+        direction LR
+        STORE[("In-Memory Store<br/>battery passport data<br/>(volatile)")]
+        RSTORE[("In-Memory Store<br/>descriptors")]
+    end
+
+    %% ============ SEEDING (cross-cutting, one-time) ============
+    SEED["Data Seeding<br/>sample Battery Pass<br/>Schneider Electric Galaxy VS UPS"]
+
+    %% ---- vertical flow ----
+    WEBUI -->|"REST / JSON"| SHELLAPI
+    WEBUI -->|"REST / JSON"| SMAPI
+    SWUI  -->|"REST / JSON"| SMAPI
+
+    SHELLAPI --> AASENV
+    SMAPI    --> AASENV
+    REGAPI   --> REG
+
+    AASENV --> STORE
+    REG    --> RSTORE
+
+    SEED -.->|"loads sample<br/>at startup"| SMAPI
+
+    %% ---- styles ----
+    classDef l1 fill:#e8f0fe,stroke:#4285f4,color:#0b2559;
+    classDef l2 fill:#eafaef,stroke:#3dcd58,color:#053d1b;
+    classDef l3 fill:#fff4e5,stroke:#f4a300,color:#4a3200;
+    classDef l4 fill:#f3e8fd,stroke:#a142f4,color:#2f0b52;
+    classDef seed fill:#fdecec,stroke:#e05353,color:#4a1010,stroke-dasharray:4 3;
+
+    class WEBUI,SWUI l1;
+    class SHELLAPI,SMAPI,REGAPI l2;
+    class AASENV,REG l3;
+    class STORE,RSTORE l4;
+    class SEED seed;

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Register the sample Battery Pass AAS + submodel into the BaSyx AAS Environment.
+"""Register all sample Battery Pass AAS + submodels into the BaSyx AAS Environment.
 
-Reads seed/battery_pass_aas.json and POSTs each shell and submodel to the
+Reads every *.json file in seed/ and POSTs each shell and submodel to the
 BaSyx v2 AAS Environment REST API (AAS Part 2 HTTP/REST). Idempotent: if an
 element already exists (HTTP 409) it is updated via PUT instead.
 """
 import base64
+import glob
 import json
 import os
 import sys
@@ -14,7 +15,7 @@ import urllib.error
 import urllib.request
 
 ENV_BASE = os.environ.get("AAS_ENV_BASE", "http://localhost:8081")
-SEED_FILE = os.environ.get("SEED_FILE", os.path.join(os.path.dirname(__file__), "seed", "battery_pass_aas.json"))
+SEED_DIR = os.environ.get("SEED_DIR", os.path.join(os.path.dirname(__file__), "seed"))
 
 
 def b64(identifier: str) -> str:
@@ -66,19 +67,34 @@ def upsert(collection: str, obj: dict):
         sys.exit(1)
 
 
+def load_seed_files():
+    paths = sorted(glob.glob(os.path.join(SEED_DIR, "*.json")))
+    if not paths:
+        print(f"[!!] no *.json files found in {SEED_DIR}", file=sys.stderr)
+        sys.exit(1)
+
+    submodels, shells = [], []
+    for path in paths:
+        print(f"[..] loading {os.path.basename(path)}")
+        with open(path) as f:
+            env = json.load(f)
+        submodels.extend(env.get("submodels", []))
+        shells.extend(env.get("assetAdministrationShells", []))
+    return submodels, shells
+
+
 def main():
-    with open(SEED_FILE) as f:
-        env = json.load(f)
+    submodels, shells = load_seed_files()
 
     wait_for_env()
 
-    for sm in env.get("submodels", []):
+    for sm in submodels:
         upsert("submodels", sm)
-    for shell in env.get("assetAdministrationShells", []):
+    for shell in shells:
         upsert("shells", shell)
 
     print("\n[done] Seed data registered. Sample identifiers:")
-    for shell in env.get("assetAdministrationShells", []):
+    for shell in shells:
         print(f"   AAS id : {shell['id']}")
         for said in shell.get("assetInformation", {}).get("specificAssetIds", []):
             if said["name"] == "SerialNumber":

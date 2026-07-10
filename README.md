@@ -93,8 +93,8 @@ Both scripts use only the Python standard library — no `pip install` needed.
 | File | Description |
 |---|---|
 | `docker-compose.yml` | Full local stack |
-| `seed/battery_pass_aas.json` | AAS + Battery Pass submodel (AAS v3 JSON), Schneider Electric sample |
-| `upload_aas.py` | Registers the sample into the AAS Environment (idempotent) |
+| `seed/*.json` | AAS + submodels (AAS v3 JSON), one or more Schneider Electric samples |
+| `upload_aas.py` | Registers every sample in `seed/` into the AAS Environment (idempotent) |
 | `smoke_test.py` | Queries + verifies key passport properties |
 | `frontend/index.html` | Single-page lookup UI (plain HTML/JS) |
 | `swagger/swagger.yaml` | Curated OpenAPI spec for the Battery Pass endpoints |

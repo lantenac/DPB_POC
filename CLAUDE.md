@@ -67,9 +67,12 @@ Five Docker Compose services (`docker-compose.yml`), diagrammed in
   depend on them.
 - **seeder** (one-shot `python:3.12-slim` container, `restart: on-failure`) — runs
   `upload_aas.py`, which polls `GET /shells` until the environment answers (up to 60 ×
-  5s = 5 min, since BaSyx cold start can be slow) and then upserts every submodel and
-  shell from `seed/battery_pass_aas.json`. Upsert = POST first, and on HTTP 409 fall back
-  to PUT against the base64url-encoded id path — this is what makes reseeding idempotent.
+  5s = 5 min, since BaSyx cold start can be slow), then loads **every `*.json` file in
+  `seed/`** (glob, sorted, all merged) and upserts every submodel and shell found across
+  them. Upsert = POST first, and on HTTP 409 fall back to PUT against the
+  base64url-encoded id path — this is what makes reseeding idempotent. Drop a new
+  `seed/*.json` file (same `assetAdministrationShells` + `submodels` shape) to register
+  another sample; no code change needed.
 - **frontend** (`nginx:alpine`, :8088) — serves `frontend/index.html` as static files.
   All logic is inline vanilla JS: `findShell()` fetches `/shells` and matches the query
   against either the AAS `id` or any `specificAssetIds` value (serial, GTIN, commercial
@@ -85,10 +88,10 @@ Five Docker Compose services (`docker-compose.yml`), diagrammed in
   `:8081/swagger-ui`, which reflects the full generic AAS API rather than the
   Battery-Pass-specific curated surface).
 
-### Data model (`seed/battery_pass_aas.json`)
+### Data model (`seed/*.json`)
 
-One `AssetAdministrationShell` referencing one `Submodel` (AAS v3 JSON per the BaSyx v2
-API). The submodel's `semanticId` is
+Each file holds one `AssetAdministrationShell` referencing one or more `Submodel`s
+(AAS v3 JSON per the BaSyx v2 API). The Battery Pass submodel's `semanticId` is
 `https://admin-shell.io/idta/SubmodelTemplate/BatteryPass/1/0`; its
 `submodelElements` are `SubmodelElementCollection`s matching IDTA Battery Pass template
 areas required by EU 2023/1542: **Battery Identification, Manufacturer, Performance &
